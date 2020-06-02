@@ -1,0 +1,2 @@
+# VigenereCipherProject
+I used a Caesar Cipher program to write a program that was capable of breaking a Vigenere Cipher for multiple languages. The program takes in an encrypted message, and then allows the user to choose multiple dictionaries of words in different languages to break the cipher in each language and then choose the correct language based on valid words in the decrypted message compared to each dictionary.
