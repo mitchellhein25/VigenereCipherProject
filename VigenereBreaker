@@ -1,0 +1,145 @@
+/* 
+ * This Class uses the preconstructed Vigenere Cipher class to break a Vigenere Cipher in multiple languages
+ * It takes in multiple dictionaries to decrypt the encrypted message in each language, and then calculates how many valid words are in each message.
+ * The message with the most valid words will be returned.
+*/
+
+
+import java.util.*;
+import edu.duke.*;
+import java.io.*;
+
+public class VigenereBreaker {
+    public String sliceString(String message, int whichSlice, int totalSlices) {
+        
+        String sliceFinal = "";
+        for (int i = whichSlice; i < message.length(); i += totalSlices) {
+            String currentChar = message.substring(i, i+1);
+            sliceFinal += currentChar;
+        }
+        return sliceFinal;
+    }
+
+    public int[] tryKeyLength(String encrypted, int klength, char mostCommon) {
+        int[] key = new int[klength];
+        //Slice the encrypted string into messages using for loop
+        for (int i = 0; i < klength; i++) {
+            //Store each slice 
+            String string = sliceString(encrypted, i, klength);
+            //Use CaesarCracker to get the key for the slice
+            CaesarCracker cc = new CaesarCracker(mostCommon);
+            int decryptKey = cc.getKey(string);
+            key[i] = decryptKey;
+        }
+        
+        return key;
+    }
+
+    public void breakVigenere () {
+        
+        FileResource fr = new FileResource();
+        String s = fr.asString();
+        DirectoryResource dr = new DirectoryResource();
+        HashMap<String,HashSet<String>> dictionariesForLangs = new HashMap<String,HashSet<String>>();
+        for (File f : dr.selectedFiles()) {
+            FileResource fr2 = new FileResource(f);
+            dictionariesForLangs.put(f.getName(), readDictionary(fr2));
+            //System.out.println("Language added to HashMap");
+        }
+        String decrypted = breakForAllLangs (s, dictionariesForLangs);
+        System.out.println(decrypted);
+    }
+    
+    public HashSet<String> readDictionary(FileResource fr) {
+        HashSet<String> dictionary = new HashSet<String> ();
+        for (String line : fr.lines()) {
+            String lowLine = line.toLowerCase();
+            dictionary.add(lowLine);
+        }
+        //System.out.println(dictionary.toString());
+        return dictionary;
+    }
+    
+    public int countWords (String message, HashSet<String> dictionary) {
+        int countWords = 0;
+        String[] words = message.split("\\W+");
+        //System.out.println(words.length);
+        for (String word : words) {
+            String lowWord = word.toLowerCase();
+            if (dictionary.contains(lowWord)){
+                countWords++;
+            }
+        }
+        //System.out.println(countWords);
+        return countWords;
+    }
+    
+    public String breakForLanguage (String encrypted, HashSet<String> dictionary) {
+        //Try all key lengths from 1-100
+        int highestCount = 0;
+        String finalDecrypted = "";
+        for (int i = 1; i < 101; i++) {
+            int[] keys = tryKeyLength(encrypted, i, mostCommonCharIn(dictionary));
+            //Decrypt the Message for ea key length
+            VigenereCipher vc = new VigenereCipher(keys);
+            String decrypted = vc.decrypt(encrypted);
+            //Count how many of the words are in dictionary
+            int wordCount = countWords(decrypted, dictionary);
+            if (wordCount > highestCount) {
+                highestCount = wordCount;
+                finalDecrypted = decrypted;
+                //System.out.println(keys.length);
+                //System.out.println(highestCount);
+            }
+        } 
+        //Return string with most words in dictionary
+        return finalDecrypted;
+    }
+    
+    public char mostCommonCharIn (HashSet<String> dictionary) {
+        //System.out.println("Ran Method");
+        int[] alpha = new int[26];
+        String alphabet = "abcdefghijklmnopqrstuvwxyz";
+        StringBuilder sbAlphabet = new StringBuilder(alphabet);
+        char mostCommonChar = '\0';
+        int highest = 0;
+        //System.out.println(mostCommonChar);
+        for (String s : dictionary) {
+            StringBuilder sb = new StringBuilder(s);
+            for (int i = 0; i < sb.length(); i++) {
+                char currChar = sb.charAt(i);
+                for (int z = 0; z < sbAlphabet.length(); z++) {
+                    if (sbAlphabet.charAt(z) == (currChar)) {
+                        alpha[z] += 1;
+                    }
+                }
+            }
+        }
+        for (int x = 0; x < alpha.length; x++) {
+            if (alpha[x] > highest) {
+                mostCommonChar = sbAlphabet.charAt(x);
+                highest = alpha[x];
+            }
+        }
+        //System.out.println(mostCommonChar);
+        return mostCommonChar;
+    }
+    
+    public String breakForAllLangs (String encrypted, HashMap<String,HashSet<String>> languages) {
+        //Iterate through the dictionaries and break for each language
+        int mostValidWords = 0;
+        String finalDecrypted = "";
+        for (String s : languages.keySet()) {
+            System.out.println("Starting break for " + s);
+            String decrypted = breakForLanguage(encrypted, languages.get(s));
+            int currValidWords = countWords(decrypted, languages.get(s));
+            System.out.println(s + " has " + currValidWords + " valid words. ");
+            if (currValidWords > mostValidWords) {
+                mostValidWords = currValidWords;
+                finalDecrypted = decrypted;
+            }
+        }
+        return finalDecrypted;
+    }
+    
+}
