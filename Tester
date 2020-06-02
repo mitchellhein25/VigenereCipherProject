@@ -1,0 +1,103 @@
+
+/**
+ * This Class is used to test the methods in the VigenereBreaker Class.
+ * 
+ * 
+ */
+
+import edu.duke.*;
+import java.util.*;
+
+public class Tester {
+    public void testCaesarCipher () {
+        FileResource fr = new FileResource();
+        String s = fr.asString();
+        CaesarCipher cc = new CaesarCipher(5);
+        String encrypted = cc.encrypt(s);
+        System.out.println(encrypted);
+    }
+    
+    public void testCaesarCracker () {
+        FileResource fr = new FileResource();
+        String s = fr.asString();
+        CaesarCracker cc = new CaesarCracker('a');
+        String decrypted = cc.decrypt(s);
+        System.out.println(decrypted);
+    }
+    
+    public void testVigenereCipher () {
+        FileResource fr = new FileResource();
+        String s = fr.asString();
+        int[] intarr = {17, 14, 12, 4};
+        VigenereCipher vc = new VigenereCipher(intarr);
+        String encrypted = vc.encrypt(s);
+        System.out.println(encrypted);
+        String decrypted = vc.decrypt(encrypted);
+        System.out.println(decrypted);
+       
+    }
+    
+    public void testSliceString() {
+       
+        VigenereBreaker vb = new VigenereBreaker();
+        String string = vb.sliceString("abcdefghijklm", 0, 3);
+        System.out.println(string);
+        String string2 = vb.sliceString("abcdefghijklm", 1, 3);
+        System.out.println(string2);
+        String string3 = vb.sliceString("abcdefghijklm", 2, 3);
+        System.out.println(string3);
+        String string4 = vb.sliceString("abcdefghijklm", 0, 4);
+        System.out.println(string4);
+        String string5 = vb.sliceString("abcdefghijklm", 1, 4);
+        System.out.println(string5);
+        String string6 = vb.sliceString("abcdefghijklm", 2, 4);
+        System.out.println(string6);
+        String string7 = vb.sliceString("abcdefghijklm", 3, 4);
+        System.out.println(string7);
+        String string8 = vb.sliceString("abcdefghijklm", 0, 5);
+        System.out.println(string8);
+        String string9 = vb.sliceString("abcdefghijklm", 1, 5);
+        System.out.println(string9);
+        String string10 = vb.sliceString("abcdefghijklm", 2, 5);
+        System.out.println(string10);
+        String string11 = vb.sliceString("abcdefghijklm", 3, 5);
+        System.out.println(string11);
+        String string12 = vb.sliceString("abcdefghijklm", 4, 5);
+        System.out.println(string12);
+    }
+    
+    public void testTryKeyLength () {
+        VigenereBreaker vb = new VigenereBreaker();
+        FileResource fr = new FileResource();
+        String s = fr.asString();
+        FileResource fr2 = new FileResource();
+        HashSet<String> dictionarySet = vb.readDictionary(fr2);
+        int[] keys = vb.tryKeyLength(s, 38, 'e');
+        VigenereCipher vc = new VigenereCipher(keys);
+        String decrypted = vc.decrypt(s);
+        //System.out.println(decrypted);
+        vb.countWords(decrypted, dictionarySet);
+    }
+    
+    public void testBreakVigenere () {
+        VigenereBreaker vc = new VigenereBreaker();
+        vc.breakVigenere();
+    }
+    
+    public void countWords() {
+        VigenereBreaker vb = new VigenereBreaker();
+        FileResource fr = new FileResource();
+        String s = fr.asString();
+        FileResource fr2 = new FileResource();
+        HashSet<String> dictionarySet = vb.readDictionary(fr2);
+        String decrypted = vb.breakForLanguage(s, dictionarySet);
+        System.out.println(vb.countWords(decrypted, dictionarySet));
+    }
+    
+    public void testMostCommonCharIn () {
+        VigenereBreaker vb = new VigenereBreaker();
+        FileResource fr2 = new FileResource();
+        HashSet<String> dictionarySet = vb.readDictionary(fr2);
+        vb.mostCommonCharIn(dictionarySet);
+    }
+}
